@@ -13,10 +13,31 @@
     <link rel="icon" type="image/png" href="/dtd-app/icons/icon-192.png" />
     <link rel="apple-touch-icon" href="/dtd-app/icons/apple-touch-icon.png" />
     <title>AI Digest</title>
-    <script type="module" crossorigin src="/dtd-app/assets/index-baWhanzw.js"></script>
-    <link rel="stylesheet" crossorigin href="/dtd-app/assets/index-ckj1OhIP.css">
+    <script type="module" crossorigin src="/dtd-app/assets/index-5jRuYqB8.js"></script>
+    <link rel="stylesheet" crossorigin href="/dtd-app/assets/index-B0BShDb7.css">
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // iOS home-screen app bug (pi-web#598): the web view frame can end one status bar short of the screen
+      // bottom. Then innerHeight = screen height - top inset, and the home indicator lies outside the web view.
+      (function () {
+        var standalone = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches;
+        if (!standalone) return;
+        var probe = document.createElement("div");
+        probe.style.cssText = "position:fixed;visibility:hidden;padding-top:env(safe-area-inset-top)";
+        document.body.appendChild(probe);
+        function check() {
+          var top = parseFloat(getComputedStyle(probe).paddingTop) || 0;
+          var landscape = innerWidth > innerHeight;
+          var full = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
+          var short = top > 0 && Math.abs(full - innerHeight - top) <= 2;
+          document.documentElement.classList.toggle("short-frame", short);
+        }
+        check();
+        addEventListener("resize", check);
+        addEventListener("orientationchange", check);
+      })();
+    </script>
   </body>
 </html>

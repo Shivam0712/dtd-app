@@ -1,7 +1,9 @@
 // Service worker for the static (GitHub Pages) build. Registered only when VITE_DATA_MODE=static.
-// App shell and data/*.json: network first, cache as fallback (offline shows the last digest).
+// HTML and data/*.json: network first, cache as fallback (offline shows the last digest).
 // Hashed assets, icons and images: cache first.
-const SHELL = "dtd-shell-v1";
+// main.tsx registers sw.js?v=<entry bundle name>, so every build installs a new worker with a new shell cache.
+const BUILD = new URL(self.location.href).searchParams.get("v") || "v1";
+const SHELL = `dtd-shell-${BUILD}`;
 const IMAGES = "dtd-images-v1";
 const MAX_IMAGES = 400;
 const scope = new URL(self.registration.scope);
@@ -51,7 +53,7 @@ self.addEventListener("fetch", (e) => {
   const url = new URL(req.url);
   if (url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname)) return;
   const rel = url.pathname.slice(scope.pathname.length);
-  if (req.mode === "navigate") e.respondWith(networkFirst(req, at("./")));
+  if (req.mode === "navigate" || rel === "" || rel === "index.html") e.respondWith(networkFirst(req, at("./")));
   else if (rel.startsWith("data/")) e.respondWith(networkFirst(new Request(url.origin + url.pathname)));
   else if (rel.startsWith("images/")) e.respondWith(cacheFirst(req, IMAGES));
   else e.respondWith(cacheFirst(req, SHELL));
